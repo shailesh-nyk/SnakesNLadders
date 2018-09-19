@@ -1,5 +1,5 @@
 # SnakesNLadders
-Snakes and Ladders game
+Snakes and Ladders game using basic HTML, CSS and JS.. No libraries
 
 
 @@ Run the .html file in a browser
