@@ -1,0 +1,246 @@
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		body {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+		#dice {
+			width: 40px;
+			height: 40px;
+			background-color: green;
+			text-align: center;
+			color: white;
+			font-size: 34px;
+			font-weight: bold;
+		}
+		#game-board {
+			margin-top: 32px;
+			width: 640px;
+			height: 640px;
+			display: flex;
+			flex-wrap: wrap;
+			border: 2px solid black;
+		}
+		#game-board div {
+			width: 60px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 60px;
+			font-size: 34px;
+			font-weight: bold;
+			color: blue;
+			border: 2px solid black;
+		}
+		#pawn1 {
+			position: absolute;
+			border-radius: 20px;
+			width: 40px !important;
+			height: 40px !important;
+			background-color: rgba(255, 0, 0, 0.5);
+		}
+		#pawn2 {
+			position: absolute;
+			border-radius: 20px;
+			width: 40px !important;
+			height: 40px !important;
+			background-color: rgba(0, 0, 255, 0.5);
+		}
+		.snake::after {
+			width: 5px;
+			height: 5px;
+			border-radius: 20px;
+			background-color: (0, 100, 0, 0.75);
+		}
+	</style>
+	<script>
+		var pawn1 = document.createElement('div');
+		var pawn2 = document.createElement('div');
+		var ladderCount = 0;
+		var snakeCount = 0;
+		pawn1.id = 'pawn1';
+		pawn2.id = 'pawn2';		
+		function start() {
+			var board = document.getElementById('game-board');
+			for( let i = 100 ; i > 0 ; i--) {
+				let box = document.createElement('div');
+				box.innerHTML = i;
+				box.id = 'box-' + i;
+				board.appendChild(box);
+			}
+			document.getElementById('box-1').appendChild(pawn1);
+			document.getElementById('box-1').appendChild(pawn2);
+			drawLadders();
+			drawSnakes();
+		}
+		function drawLadders() {
+			drawLadder(2,38);
+			drawLadder(4,14);
+			drawLadder(9,31);
+			drawLadder(21,42);
+			drawLadder(28,84);
+			drawLadder(36,44);
+			drawLadder(51,67);
+			drawLadder(80,99);
+			drawLadder(71,91);
+		}
+		function drawSnakes() {
+			drawSnake(6,16);
+			drawSnake(10,62);
+			drawSnake(11,49);
+			drawSnake(20,48);
+			drawSnake(24,87);
+			drawSnake(60,64);
+			drawSnake(73,93);
+			drawSnake(45,98);
+		}
+		function rollDice() {
+			let diceval = Math.floor( Math.random() * 6) + 1;
+			document.getElementById('dice').innerHTML = diceval;
+			setTimeout(() => {
+				movePawn(diceval);
+			}, 500)
+		}
+		function movePawn(value) {
+			let player1 = false, player2 = false;
+			let playerPawn;
+			if(document.getElementById('player1').style.display === 'block') {
+				player1 = true;
+				playerPawn =  pawn1;
+				playerPawnId = 'pawn1';
+				document.getElementById('player1').style.display = 'none';
+				document.getElementById('player2').style.display = 'block';
+			} else {
+				player2 = true;
+				playerPawn =  pawn2;
+				playerPawnId = 'pawn2';
+				document.getElementById('player2').style.display = 'none';
+				document.getElementById('player1').style.display = 'block';
+			}
+			let current = document.getElementById(playerPawnId).parentElement;
+			let pos = parseInt(current.id.replace('box-', '')) + value ;
+			if(pos <= 100) {
+				let newpos = document.getElementById('box-' + pos);
+				newpos.appendChild(playerPawn);
+				if(newpos.className.includes('ladder-bottom')) {
+					let movepos = parseInt(newpos.className.replace('ladder-bottom-', ''));
+					setTimeout(()=> {
+						document.getElementsByClassName('ladder-top-' + movepos).item(0).appendChild(playerPawn);
+					},1000)
+				}
+				if(newpos.className.includes('snake-top')) {
+					let movepos = parseInt(newpos.className.replace('snake-top-', ''));
+					setTimeout(()=> {
+						document.getElementsByClassName('snake-bottom-' + movepos).item(0).appendChild(playerPawn);
+					},1000)
+				}
+			}
+			if(pos == 100) {
+				winGame(player1);
+			}
+		}
+		function winGame() {
+			if(player1) {
+				alert('Player 1 has won the game!!!');
+			}
+			else {
+				alert('Player 2 has won the game!!!');
+			}
+		}
+		
+		function drawLadder(a, b)    //ax,ay,bx,by
+		{
+			ladderCount ++ ;
+			var boxA = document.getElementById('box-' + a);
+			boxA.classList.add('ladder-bottom-' + ladderCount);
+			var boxB = document.getElementById('box-' + b);
+			boxB.classList.add('ladder-top-' + ladderCount);
+			boxApos = boxA.getBoundingClientRect();
+			boxBpos = boxB.getBoundingClientRect();
+			let ax = boxApos.left + 20;
+			let ay = boxApos.top + 20;
+			let bx = boxBpos.left + 20;
+			let by = boxBpos.top + 20;
+			document.body.appendChild(createLine(ax, ay, bx, by, 'ladder'));
+		}
+		function drawSnake(a, b)    //ax,ay,bx,by
+		{
+			snakeCount ++ ; 
+			var boxA = document.getElementById('box-' + a);
+			boxA.classList.add('snake-bottom-' + snakeCount);
+			var boxB = document.getElementById('box-' + b);
+			boxB.classList.add('snake-top-' + snakeCount);
+			boxApos = boxA.getBoundingClientRect();
+			boxBpos = boxB.getBoundingClientRect();
+			let ax = boxApos.left + 20;
+			let ay = boxApos.top + 20;
+			let bx = boxBpos.left + 20;
+			let by = boxBpos.top + 20;
+			document.body.appendChild(createLine(ax, ay, bx, by, 'snake'));
+		}
+		function createLadder(x, y, length, angle) {
+				var line = document.createElement("div");
+				var styles = 'border: 2px solid brown; '
+					+ 'width: ' + length + 'px; '
+					+ 'height: 5px; '
+					+ '-moz-transform: rotate(' + angle + 'rad); '
+					+ '-webkit-transform: rotate(' + angle + 'rad); '
+					+ '-o-transform: rotate(' + angle + 'rad); '
+					+ '-ms-transform: rotate(' + angle + 'rad); '
+					+ 'position: absolute; '
+					+ 'top: ' + y + 'px; '
+					+ 'left: ' + x + 'px; ';
+				line.setAttribute('style', styles);
+				return line;
+		}
+		function createSnake(x, y, length, angle) {
+				var line = document.createElement("div");
+				var styles = 'border: 2px solid rgba(0, 100, 0, 0.75); '
+					+ 'width: ' + length + 'px; '
+					+ 'height: 0px; '
+					+ '-moz-transform: rotate(' + angle + 'rad); '
+					+ '-webkit-transform: rotate(' + angle + 'rad); '
+					+ '-o-transform: rotate(' + angle + 'rad); '
+					+ '-ms-transform: rotate(' + angle + 'rad); '
+					+ 'position: absolute; '
+					+ 'top: ' + y + 'px; '
+					+ 'left: ' + x + 'px; ';
+				line.setAttribute('style', styles);
+				line.className = 'snake';
+				return line;
+		}
+		function createLine(x1, y1, x2, y2, type) {
+			var a = x1 - x2,
+				b = y1 - y2,
+				c = Math.sqrt(a * a + b * b);
+			var sx = (x1 + x2) / 2,
+				sy = (y1 + y2) / 2;
+			var x = sx - c / 2,
+				y = sy;
+			var alpha = Math.PI - Math.atan2(-b, a);
+			if(type== 'ladder') {
+				return createLadder(x, y, c, alpha);
+			} else {
+				return createSnake(x, y, c, alpha);
+			}
+
+		}
+	</script>
+</head>
+
+<body onload="start()">
+	<div id='game-board'>
+		
+	</div>
+	<div style='display: flex; width: 300px; justify-content: space-around; margin-top: 50px;align-items: center;'>
+			<span id='player1' style='font-size: 20px; font-weight: bold;display: block;'> Player 1 </span>
+			<span id='player2' style='font-size: 20px; font-weight: bold;display: none;'> Player 2 </span>
+			<button style='width: 80px; height: 40px;' onclick="rollDice()"> Roll Dice </button> 
+			<div id='dice'></div>
+	</div>
+</body>
+
+</html>
